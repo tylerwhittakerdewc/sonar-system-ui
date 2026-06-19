@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-gray-900 text-white;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  @apply font-bold;
+}
+
+button {
+  @apply bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded;
+}
+
+.navbar {
+  @apply bg-gray-800 p-4;
+}
+
+.hud {
+  @apply bg-gray-700 p-4 rounded-lg shadow-lg;
+}
+
+.sonar-canvas {
+  @apply w-full h-full border border-gray-600;
+}
+
+.controls {
+  @apply flex space-x-4;
+}

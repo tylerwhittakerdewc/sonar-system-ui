@@ -17,6 +17,10 @@ const WorldMap: React.FC<Props> = ({
   const x = ((lon + 180) / 360) * width;
   const y = ((90 - lat) / 180) * height;
 
+  // marker adjustments: half the previous size and slightly lower
+  const markerSize = 10; // half of previous 20
+  const lowerOffset = 8; // push marker a bit lower
+
   return (
     <div
       className="rounded-lg p-1 shadow-md w-full"
@@ -36,30 +40,53 @@ const WorldMap: React.FC<Props> = ({
           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
         />
 
-        {/* marker positioned in the South China Sea */}
+        {/* smaller marker positioned a bit lower */}
         <div
           aria-hidden
           style={{
             position: 'absolute',
-            left: x - 10,
-            top: y - 10,
-            width: 20,
-            height: 20,
+            left: (x - markerSize / 2),
+            top: (y - markerSize / 2 + lowerOffset),
+            width: markerSize,
+            height: markerSize,
             pointerEvents: 'none',
             transform: 'translate(0,0)',
           }}
         >
           <span
-            className="absolute inline-flex h-5 w-5 rounded-full"
-            style={{ background: 'rgba(6,255,220,0.14)', left: 0, top: 0 }}
+            className="absolute inline-flex"
+            style={{
+              left: 0,
+              top: 0,
+              width: '100%',
+              height: '100%',
+              borderRadius: '50%',
+              background: 'rgba(6,255,220,0.14)',
+            }}
           />
           <span
-            className="absolute inline-flex h-5 w-5 rounded-full bg-cyan-400 opacity-95"
-            style={{ left: 0, top: 0 }}
+            className="absolute inline-flex"
+            style={{
+              left: 0,
+              top: 0,
+              width: '100%',
+              height: '100%',
+              borderRadius: '50%',
+              background: '#06ffd6',
+              opacity: 0.95,
+            }}
           />
           <span
-            className="absolute inline-flex h-5 w-5 rounded-full bg-cyan-400 opacity-30 animate-ping"
-            style={{ left: 0, top: 0 }}
+            className="absolute inline-flex animate-ping"
+            style={{
+              left: 0,
+              top: 0,
+              width: '100%',
+              height: '100%',
+              borderRadius: '50%',
+              background: '#06ffd6',
+              opacity: 0.28,
+            }}
           />
         </div>
       </div>

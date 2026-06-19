@@ -7,22 +7,23 @@ interface Props {
   size?: number; // diameter in CSS pixels
 }
 
-const SonarCanvas: React.FC<Props> = ({ contacts = [], maxRange = 1000, size = 580 }) => {
+const SonarCanvas: React.FC<Props> = ({ contacts = [], maxRange = 1000, size = 620 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sonarRadius = size / 2;
   const sweepRef = useRef<number>(0);
   const rafRef = useRef<number | null>(null);
 
+  // unified neon/cyan palette
   const typeColor = (type: Contact['type']) => {
     switch (type) {
-      case 'submarine': return '#FF3232';
-      case 'ship': return '#FFAA33';
-      case 'seaTurtle': return '#00C078';
-      case 'whale': return '#2E9BFF';
-      case 'swimmer': return '#FFFFFF';
-      case 'surfer': return '#FFD26A';
-      case 'kraken': return '#C864FF';
-      default: return '#C8C8C8';
+      case 'submarine': return 'rgba(0,255,218,0.98)'; // bright cyan
+      case 'ship': return 'rgba(0,200,255,0.95)';
+      case 'seaTurtle': return 'rgba(80,230,200,0.95)';
+      case 'whale': return 'rgba(0,170,255,0.95)';
+      case 'swimmer': return 'rgba(170,255,240,0.95)';
+      case 'surfer': return 'rgba(160,230,200,0.95)';
+      case 'kraken': return 'rgba(160,200,255,0.95)';
+      default: return 'rgba(160,240,220,0.95)';
     }
   };
 
@@ -121,6 +122,7 @@ const SonarCanvas: React.FC<Props> = ({ contacts = [], maxRange = 1000, size = 5
       ctx.fill();
       ctx.stroke();
       // tentacles
+      ctx.strokeStyle = 'rgba(100,220,255,0.9)';
       for (let i = -3; i <= 3; i++) {
         const ix = i * s * 0.12;
         ctx.beginPath();
@@ -145,17 +147,24 @@ const SonarCanvas: React.FC<Props> = ({ contacts = [], maxRange = 1000, size = 5
 
     // background
     ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = '#001219';
+    ctx.fillStyle = '#000814';
     ctx.fillRect(0, 0, width, height);
+
+    // outer neon glow
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius + 6, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(6,255,220,0.06)';
+    ctx.lineWidth = 6;
+    ctx.stroke();
 
     // sonar circle
     ctx.beginPath();
     ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(0,50,0,0.62)';
+    ctx.fillStyle = 'rgba(0,16,18,0.85)';
     ctx.fill();
 
     // rings
-    ctx.strokeStyle = 'rgba(100,200,100,0.06)';
+    ctx.strokeStyle = 'rgba(20,240,210,0.08)';
     ctx.lineWidth = 1;
     for (let i = 1; i <= 4; i++) {
       ctx.beginPath();
@@ -163,24 +172,33 @@ const SonarCanvas: React.FC<Props> = ({ contacts = [], maxRange = 1000, size = 5
       ctx.stroke();
     }
 
+    // grid lines (subtle)
+    ctx.strokeStyle = 'rgba(10,200,180,0.04)';
+    ctx.beginPath();
+    ctx.moveTo(centerX - radius, centerY);
+    ctx.lineTo(centerX + radius, centerY);
+    ctx.moveTo(centerX, centerY - radius);
+    ctx.lineTo(centerX, centerY + radius);
+    ctx.stroke();
+
     // sweep
     const sweep = sweepRef.current;
     ctx.save();
     ctx.translate(centerX, centerY);
     ctx.rotate(sweep);
     const grad = ctx.createLinearGradient(0, 0, radius, 0);
-    grad.addColorStop(0, 'rgba(150,255,120,0.16)');
-    grad.addColorStop(1, 'rgba(150,255,120,0.02)');
+    grad.addColorStop(0, 'rgba(0,255,220,0.14)');
+    grad.addColorStop(1, 'rgba(0,255,220,0.02)');
     ctx.fillStyle = grad;
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.arc(0, 0, radius, -0.035, 0.035);
+    ctx.arc(0, 0, radius, -0.034, 0.034);
     ctx.closePath();
     ctx.fill();
     ctx.beginPath();
     ctx.moveTo(0, 0);
     ctx.lineTo(radius, 0);
-    ctx.strokeStyle = 'rgba(150,255,120,0.52)';
+    ctx.strokeStyle = 'rgba(0,220,200,0.6)';
     ctx.lineWidth = 2;
     ctx.stroke();
     ctx.restore();
@@ -194,18 +212,18 @@ const SonarCanvas: React.FC<Props> = ({ contacts = [], maxRange = 1000, size = 5
       const distFromCenter = Math.hypot(sx - centerX, sy - centerY);
       if (distFromCenter > radius) return;
 
-      // base pulse / shadow for visibility
+      // shadow
       ctx.beginPath();
-      ctx.fillStyle = 'rgba(0,0,0,0.25)';
-      ctx.ellipse(sx + 2, sy + 6, 8, 4, 0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.ellipse(sx + 2, sy + 6, 10, 5, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // silhouette
-      const s = Math.max(16, Math.min(46, 46 * (1 - (c.distance / maxRange))));
+      // silhouette size derived from distance
+      const s = Math.max(14, Math.min(48, 48 * (1 - (c.distance / maxRange))));
       drawSilhouette(ctx, c.type, sx, sy, s);
 
-      // label
-      ctx.fillStyle = 'rgba(200,200,200,0.95)';
+      // neon label
+      ctx.fillStyle = 'rgba(120,255,235,0.95)';
       ctx.font = '12px system-ui, Arial';
       ctx.textAlign = 'left';
       ctx.fillText(`${c.type} • ${c.distance}m`, sx + Math.max(18, s * 0.6), sy - Math.max(12, s * 0.5));
@@ -228,7 +246,7 @@ const SonarCanvas: React.FC<Props> = ({ contacts = [], maxRange = 1000, size = 5
     ctx.scale(dpr, dpr);
 
     const render = () => {
-      sweepRef.current += 0.012;
+      sweepRef.current += 0.0115;
       if (sweepRef.current > Math.PI * 2) sweepRef.current -= Math.PI * 2;
       draw(ctx, cssSize, cssSize);
       rafRef.current = requestAnimationFrame(render);
@@ -243,7 +261,7 @@ const SonarCanvas: React.FC<Props> = ({ contacts = [], maxRange = 1000, size = 5
   return (
     <canvas
       ref={canvasRef}
-      className="rounded-lg shadow-xl bg-transparent"
+      className="rounded-xl shadow-2xl bg-transparent"
       aria-label="Sonar display"
     />
   );

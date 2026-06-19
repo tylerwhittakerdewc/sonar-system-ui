@@ -1,38 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
 const Controls: React.FC = () => {
-  const [heading, setHeading] = useState(45);
-  const [throttle, setThrottle] = useState(50);
-
-  // notify other components of heading changes
-  useEffect(() => {
-    const ev = new CustomEvent<number>('headingChange', { detail: heading });
-    window.dispatchEvent(ev);
-  }, [heading]);
-
   return (
-    <div className="fixed left-1/2 transform -translate-x-1/2 bottom-4 w-11/12 max-w-6xl bg-gradient-to-br from-gray-900/70 to-gray-800/30 border border-gray-700 rounded-xl p-4 flex items-center justify-between gap-4 shadow-2xl">
-      <div className="flex items-center gap-4">
-        <div className="text-xs text-gray-300">Helm</div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => setHeading(h => (h - 5 + 360) % 360)} className="px-3 py-2 bg-gray-800 rounded">◀</button>
-          <div className="bg-black/20 rounded px-3 py-2 text-sm">{heading}°</div>
-          <button onClick={() => setHeading(h => (h + 5) % 360)} className="px-3 py-2 bg-gray-800 rounded">▶</button>
-        </div>
-      </div>
-
-      <div className="flex-1 px-4">
-        <div className="text-xs text-gray-300 mb-1">Throttle</div>
-        <input
-          type="range"
-          min={0}
-          max={100}
-          value={throttle}
-          onChange={(e) => setThrottle(Number(e.target.value))}
-          className="w-full"
-        />
-      </div>
-
+    <div className="fixed left-1/2 transform -translate-x-1/2 bottom-4 w-11/12 max-w-6xl bg-gradient-to-br from-gray-900/70 to-gray-800/30 border border-gray-700 rounded-xl p-3 flex items-center justify-between gap-4 shadow-2xl">
       <div className="flex items-center gap-3">
         <button className="px-4 py-2 bg-green-600 rounded">Ping</button>
         <button className="px-4 py-2 bg-yellow-600 rounded">Deploy Buoy</button>
@@ -47,6 +17,13 @@ const Controls: React.FC = () => {
         >
           Deploy Nukes
         </button>
+      </div>
+
+      <div className="text-xs text-gray-300">Controls</div>
+
+      <div className="flex items-center gap-3">
+        <button className="px-3 py-2 bg-gray-800 rounded">Logs</button>
+        <button className="px-3 py-2 bg-gray-800 rounded">Settings</button>
       </div>
     </div>
   );

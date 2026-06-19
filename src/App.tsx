@@ -34,16 +34,22 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {/* Center column: sonar centered with neon frame */}
-        <div className="col-span-6 flex items-center justify-center">
-          <div className="p-4 rounded-2xl shadow-2xl"
-               style={{
-                 background: 'linear-gradient(180deg, rgba(0,10,12,0.6), rgba(0,6,8,0.3))',
-                 border: '1px solid rgba(16,220,200,0.06)',
-                 boxShadow: '0 10px 30px rgba(0, 220, 200, 0.03)'
-               }}>
-            <div className="rounded-xl p-3" style={{ boxShadow: 'inset 0 0 40px rgba(16,220,200,0.02)' }}>
-              <SonarCanvas contacts={contacts} size={680} maxRange={1400} />
+        {/* Center column: sonar centered and filling available height */}
+        <div
+          className="col-span-6 flex items-center justify-center"
+          style={{ height: 'calc(100vh - 220px)' }}
+        >
+          <div
+            className="p-4 rounded-2xl shadow-2xl w-full h-full flex items-center justify-center"
+            style={{
+              background: 'linear-gradient(180deg, rgba(0,10,12,0.6), rgba(0,6,8,0.3))',
+              border: '1px solid rgba(16,220,200,0.06)',
+              boxShadow: '0 10px 30px rgba(0, 220, 200, 0.03)',
+            }}
+          >
+            <div className="rounded-xl p-3 w-full h-full" style={{ boxShadow: 'inset 0 0 40px rgba(16,220,200,0.02)' }}>
+              {/* SonarCanvas will size itself to the container */}
+              <SonarCanvas contacts={contacts} maxRange={1400} iconSize={32} />
             </div>
           </div>
         </div>

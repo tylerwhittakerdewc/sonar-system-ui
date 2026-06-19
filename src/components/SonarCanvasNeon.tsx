@@ -1,21 +1,17 @@
-import React, { useRef, useEffect, useLayoutEffect, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Contact } from '../types';
 
 interface Props {
   contacts?: Contact[];
   maxRange?: number; // meters represented by the outer radius
-  size?: number; // max diameter in CSS pixels
-  iconSize?: number; // fixed silhouette size in px
+  size?: number; // diameter in CSS pixels
 }
 
-const SonarCanvas: React.FC<Props> = ({ contacts = [], maxRange = 1000, size = 620, iconSize = 28 }) => {
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
+const SonarCanvas: React.FC<Props> = ({ contacts = [], maxRange = 1000, size = 620 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const sonarRadiusRef = useRef<number>(0);
+  const sonarRadius = size / 2;
   const sweepRef = useRef<number>(0);
   const rafRef = useRef<number | null>(null);
-
-  const [renderSize, setRenderSize] = useState<number>(size);
 
   // unified neon/cyan palette
   const typeColor = (type: Contact['type']) => {
@@ -144,19 +140,15 @@ const SonarCanvas: React.FC<Props> = ({ contacts = [], maxRange = 1000, size = 6
     ctx.restore();
   };
 
-  const draw = (ctx: CanvasRenderingContext2D, cssWidth: number, cssHeight: number) => {
-    // ensure we compute center & radius from actual css pixel dimensions
-    const centerX = cssWidth / 2;
-    const centerY = cssHeight / 2;
-    // leave a small padding so the circle doesn't touch edges
-    const padding = Math.max(8, Math.min(24, Math.floor(Math.min(cssWidth, cssHeight) * 0.03)));
-    const radius = Math.min(centerX, centerY) - padding;
-    sonarRadiusRef.current = radius;
+  const draw = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = Math.min(centerX, centerY, sonarRadius);
 
     // background
-    ctx.clearRect(0, 0, cssWidth, cssHeight);
+    ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = '#000814';
-    ctx.fillRect(0, 0, cssWidth, cssHeight);
+    ctx.fillRect(0, 0, width, height);
 
     // outer neon glow
     ctx.beginPath();
@@ -211,10 +203,10 @@ const SonarCanvas: React.FC<Props> = ({ contacts = [], maxRange = 1000, size = 6
     ctx.stroke();
     ctx.restore();
 
-    // contacts - use fixed iconSize for all objects (medium by default)
+    // contacts
     contacts.forEach((c, idx) => {
-      const px = (c.position.x / (maxRange || 1)) * radius;
-      const py = -(c.position.y / (maxRange || 1)) * radius;
+      const px = (c.position.x / maxRange) * radius;
+      const py = -(c.position.y / maxRange) * radius;
       const sx = centerX + px;
       const sy = centerY + py;
       const distFromCenter = Math.hypot(sx - centerX, sy - centerY);
@@ -226,8 +218,8 @@ const SonarCanvas: React.FC<Props> = ({ contacts = [], maxRange = 1000, size = 6
       ctx.ellipse(sx + 2, sy + 6, 10, 5, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // fixed silhouette size
-      const s = iconSize;
+      // silhouette size derived from distance
+      const s = Math.max(14, Math.min(48, 48 * (1 - (c.distance / maxRange))));
       drawSilhouette(ctx, c.type, sx, sy, s);
 
       // neon label
@@ -238,41 +230,20 @@ const SonarCanvas: React.FC<Props> = ({ contacts = [], maxRange = 1000, size = 6
     });
   };
 
-  // measure wrapper size and clamp to provided `size` prop
-  useLayoutEffect(() => {
-    const node = wrapperRef.current;
-    if (!node) return;
-    const ro = new ResizeObserver((entries) => {
-      const rect = entries[0].contentRect;
-      const s = Math.max(120, Math.min(size || 620, Math.floor(Math.min(rect.width, rect.height))));
-      setRenderSize(s);
-    });
-    ro.observe(node);
-    // initial measure
-    const rect = node.getBoundingClientRect();
-    const initial = Math.max(120, Math.min(size || 620, Math.floor(Math.min(rect.width, rect.height))));
-    setRenderSize(initial);
-
-    return () => ro.disconnect();
-  }, [size]);
-
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const dpr = window.devicePixelRatio || 1;
-    const cssSize = renderSize;
-    // set CSS size so it lays out properly in the container
+    const cssSize = size;
     canvas.style.width = `${cssSize}px`;
     canvas.style.height = `${cssSize}px`;
-    // set actual pixel buffer according to DPR
     canvas.width = Math.round(cssSize * dpr);
     canvas.height = Math.round(cssSize * dpr);
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    // scale drawing operations to DPR
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.scale(dpr, dpr);
 
     const render = () => {
       sweepRef.current += 0.0115;
@@ -285,16 +256,14 @@ const SonarCanvas: React.FC<Props> = ({ contacts = [], maxRange = 1000, size = 6
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [contacts, maxRange, renderSize, iconSize]);
+  }, [contacts, maxRange, size]);
 
   return (
-    <div ref={wrapperRef} style={{ width: '100%', height: `${renderSize}px`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <canvas
-        ref={canvasRef}
-        className="rounded-xl shadow-2xl bg-transparent"
-        aria-label="Sonar display"
-      />
-    </div>
+    <canvas
+      ref={canvasRef}
+      className="rounded-xl shadow-2xl bg-transparent"
+      aria-label="Sonar display"
+    />
   );
 };
 

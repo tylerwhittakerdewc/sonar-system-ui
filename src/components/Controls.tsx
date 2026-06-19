@@ -1,8 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const Controls: React.FC = () => {
   const [heading, setHeading] = useState(45);
   const [throttle, setThrottle] = useState(50);
+
+  // notify other components of heading changes
+  useEffect(() => {
+    const ev = new CustomEvent<number>('headingChange', { detail: heading });
+    window.dispatchEvent(ev);
+  }, [heading]);
 
   return (
     <div className="fixed left-1/2 transform -translate-x-1/2 bottom-4 w-11/12 max-w-6xl bg-gradient-to-br from-gray-900/70 to-gray-800/30 border border-gray-700 rounded-xl p-4 flex items-center justify-between gap-4 shadow-2xl">
@@ -35,7 +41,6 @@ const Controls: React.FC = () => {
           className="px-4 py-2 bg-black/90 text-white rounded border border-red-600 hover:bg-red-700"
           onClick={() => {
             // destructive action placeholder
-            // integrate real confirmation/flow later
             // eslint-disable-next-line no-alert
             alert('DEPLOY NUKES: command queued (simulation)');
           }}

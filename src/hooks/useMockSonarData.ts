@@ -27,12 +27,13 @@ const useMockSonarData = () => {
     const [contacts, setContacts] = useState<Contact[]>([]);
 
     useEffect(() => {
+        // spawn less frequently to reduce clutter
         const interval = setInterval(() => {
             setContacts((prev) => {
                 const newContact = generateRandomContact();
-                return [...prev, newContact].slice(-12); // keep last 12
+                return [...prev, newContact].slice(-10); // keep last 10
             });
-        }, 1800);
+        }, 3500); // every 3.5s
 
         return () => clearInterval(interval);
     }, []);
